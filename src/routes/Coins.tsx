@@ -2,6 +2,9 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { CompletionTriggerKind } from "typescript";
+import { useQuery } from "react-query";
+import { fetchCoins } from "../api";
+import { Helmet } from "react-helmet";
 
 const Title = styled.h1`
   color: ${(props) => props.theme.accentColor};
@@ -58,7 +61,7 @@ const Coin = styled.li`
   }
 `;
 
-interface CoinInterface {
+interface ICoinInterface {
   id: string;
   name: string;
   symbol: string;
@@ -69,26 +72,24 @@ interface CoinInterface {
 }
 
 function Coins() {
-  const [coins, setCoins] = useState<CoinInterface[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      const response = await fetch(`https://api.coinpaprika.com/v1/coins`);
-      const json = await response.json();
-      setCoins(json.slice(0, 100));
-      setIsLoading(false);
-    })();
-  }, []);
+  const { isLoading, data } = useQuery<ICoinInterface[]>(
+    "allCoins",
+    fetchCoins
+  );
+
   return (
     <Container>
+      <Helmet>
+        <title>코인목록</title>
+      </Helmet>
       <Header>
-        <Title>코인 {coins.length !== 0 ? coins.length : null}</Title>
+        <Title>코인목록 {data?.length !== 0 ? data?.length : null}</Title>
       </Header>
       <CoinsList>
         {isLoading ? (
           <Loader>Loading...</Loader>
         ) : (
-          coins.map((coin) => (
+          data?.slice(0, 100).map((coin) => (
             <Coin>
               <Link
                 to={{
