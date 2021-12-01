@@ -4,6 +4,7 @@ import ApexChart from "react-apexcharts";
 
 interface IChartProps {
   coinId: string;
+  isDark: boolean;
 }
 
 interface IHisData {
@@ -16,7 +17,7 @@ interface IHisData {
   volume: number;
   market_cap: number;
 }
-function Chart({ coinId }: IChartProps) {
+function Chart({ coinId, isDark }: IChartProps) {
   const { isLoading, data } = useQuery<IHisData[]>(["ohlcv", coinId], () =>
     fetchCoinHis(coinId)
   );
@@ -41,7 +42,7 @@ function Chart({ coinId }: IChartProps) {
               { name: "Price", data: data?.map((price) => price.close) },
             ]}
             options={{
-              theme: { mode: "dark", palette: "palette1" },
+              theme: { mode: isDark ? "dark" : "light", palette: "palette1" },
               chart: {
                 background: "transparent",
                 height: 500,
@@ -87,7 +88,7 @@ function Chart({ coinId }: IChartProps) {
               },
             ]}
             options={{
-              theme: { mode: "dark" },
+              theme: { mode: isDark ? "dark" : "light" },
               chart: {
                 type: "candlestick",
                 background: "transparent",

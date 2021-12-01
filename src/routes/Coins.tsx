@@ -45,7 +45,7 @@ const Img = styled.img`
 
 const Coin = styled.li`
   background-color: white;
-  color: ${(props) => props.theme.bgColor};
+  color: ${(props) => props.theme.textColor};
   margin-bottom: 10px;
 
   border-radius: 15px;
@@ -71,7 +71,11 @@ interface ICoinInterface {
   type: string;
 }
 
-function Coins() {
+interface ICoinsProps {
+  toggleDark: () => void;
+}
+
+function Coins({ toggleDark }: ICoinsProps) {
   const { isLoading, data } = useQuery<ICoinInterface[]>(
     "allCoins",
     fetchCoins
@@ -84,6 +88,7 @@ function Coins() {
       </Helmet>
       <Header>
         <Title>코인목록 {data?.length !== 0 ? data?.length : null}</Title>
+        <button onClick={toggleDark}>Toggle Mode</button>
       </Header>
       <CoinsList>
         {isLoading ? (
