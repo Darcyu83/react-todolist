@@ -1,10 +1,12 @@
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { CompletionTriggerKind } from "typescript";
+import { CompletionTriggerKind, createSourceFile } from "typescript";
 import { useQuery } from "react-query";
 import { fetchCoins } from "../api";
 import { Helmet } from "react-helmet";
+import { useSetRecoilState } from "recoil";
+import { isDarkAtom } from "../atoms";
 
 const Title = styled.h1`
   color: ${(props) => props.theme.accentColor};
@@ -71,16 +73,16 @@ interface ICoinInterface {
   type: string;
 }
 
-interface ICoinsProps {
-  toggleDark: () => void;
-}
+interface ICoinsProps {}
 
-function Coins({ toggleDark }: ICoinsProps) {
+function Coins() {
   const { isLoading, data } = useQuery<ICoinInterface[]>(
     "allCoins",
     fetchCoins
   );
 
+  const setDarkAtom = useSetRecoilState(isDarkAtom);
+  const toggleDarkAtom = () => setDarkAtom((curr) => !curr);
   return (
     <Container>
       <Helmet>
@@ -88,7 +90,7 @@ function Coins({ toggleDark }: ICoinsProps) {
       </Helmet>
       <Header>
         <Title>코인목록 {data?.length !== 0 ? data?.length : null}</Title>
-        <button onClick={toggleDark}>Toggle Mode</button>
+        <button onClick={toggleDarkAtom}>Toggle Mode</button>
       </Header>
       <CoinsList>
         {isLoading ? (
