@@ -1,8 +1,16 @@
-import React from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
 import styled, { createGlobalStyle } from "styled-components";
-import { hourSelector, minutesState } from "./atoms";
 import ToDoList from "./ToDoList";
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  DropResult,
+} from "react-beautiful-dnd";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { toDoState, toDoStateDnD } from "./atoms";
+import DraggableCard from "./components/DraggableCard";
+import Board from "./components/Board";
+import Boards from "./components/Boards";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -63,39 +71,62 @@ a{
 }
 `;
 
+const Wrapper = styled.div`
+  display: flex;
+  max-width: 680px;
+  width: 100%;
+  height: 100vh;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+`;
+
 function App() {
-  const [minutes, setMinutes] = useRecoilState(minutesState);
-  const [hours, setHours] = useRecoilState(hourSelector);
+  const [toDos, setToDos] = useRecoilState(toDoStateDnD);
 
-  const onChange = (e: React.FormEvent<HTMLInputElement>) => {
-    const {
-      currentTarget: { value },
-    } = e;
-    setMinutes(+value);
-  };
+  const onDragEnd = (info: DropResult) => {
+    const { draggableId, source, destination } = info;
 
-  const onHoursChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setHours(+e.currentTarget.value);
+    if (!destination?.droppableId) return;
+    if (destination.droppableId === source.droppableId) {
+      setToDos((allBoards) => {
+        const boardCopy = [...allBoards[source.droppableId]];
+        const taskObj = boardCopy[source.index];
+        //1) Delete Item on Source.index
+        boardCopy.splice(source.index, 1);
+        // 2) Put back the item on the destination index
+        boardCopy.splice(destination?.index, 0, taskObj);
+        return {
+          ...allBoards,
+          [destination.droppableId]: boardCopy,
+        };
+      });
+    }
+
+    if (destination.droppableId !== source.droppableId) {
+      setToDos((allBoards) => {
+        const sourceBoard = [...allBoards[source.droppableId]];
+        const destinBoard = [...allBoards[destination.droppableId]];
+        const taskObj = sourceBoard[source.index];
+        sourceBoard.splice(source.index, 1);
+        destinBoard.splice(destination.index, 0, taskObj);
+        return {
+          ...allBoards,
+          [source.droppableId]: sourceBoard,
+          [destination.droppableId]: destinBoard,
+        };
+      });
+    }
   };
 
   return (
     <>
       <GlobalStyle />
-      <ToDoList />
-
-      <input
-        value={minutes}
-        onChange={onChange}
-        type="number"
-        placeholder="Minutes"
-      />
-
-      <input
-        value={hours}
-        onChange={onHoursChange}
-        type="number"
-        placeholder="Hours"
-      />
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Wrapper>
+          <Boards></Boards>
+        </Wrapper>
+      </DragDropContext>
     </>
   );
 }

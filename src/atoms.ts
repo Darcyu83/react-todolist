@@ -30,6 +30,23 @@ export const toDoState = atom<ITodo[]>({
   default: [],
 });
 
+export interface Todos {
+  id: number;
+  text: string;
+}
+
+export interface IBoards {
+  [key: string]: Todos[];
+}
+export const toDoStateDnD = atom<IBoards>({
+  key: "toDoDnD",
+  default: {
+    "To Do": [],
+    Doing: [],
+    Done: [],
+  },
+});
+
 export const toDoSelector = selector({
   key: "toDoSelector",
   get: (options) => {
